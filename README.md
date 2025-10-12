@@ -15,26 +15,7 @@ A abordagem é técnica, mas **simplificada** para facilitar o entendimento dos 
 O fluxo de dados começa com o recebimento de um pedido e se ramifica dependendo do resultado do processamento do pagamento.  
 Abaixo, detalhamos a jornada de um pedido através da nossa arquitetura simulada.
 
-```mermaid
-graph TD
-    A[Cliente faz o Pedido] --> B[receber_pedido];
-    B -- Adiciona na Fila --> C{Fila de Pedidos - SQS};
-    C --> D[processar_pagamento];
-    D -- Publica Status --> E{Topico de Status - SNS};
-    E -- Status: SUCESSO --> F[atualizar_inventario];
-    E -- Status: SUCESSO --> G[enviar_notificacao];
-    E -- Status: FALHA --> H[cancelar_pedido];
-    E -- Status: FALHA --> G;
-    subgraph "Lógica de Sucesso"
-        F;
-    end
-    subgraph "Lógica de Falha"
-        H;
-    end
-    subgraph "Notificações"
-        G;
-    end
-```
+![Arquitetura Web](diagram/arquitetura_web.png)
 ### ⚙️ Detalhamento dos Microserviços
 #### 📨 receber_pedido.py (API Gateway + Lambda)
 **Responsabilidade:**
