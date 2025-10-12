@@ -16,6 +16,7 @@ O fluxo de dados começa com o recebimento de um pedido e se ramifica dependendo
 Abaixo, detalhamos a jornada de um pedido através da nossa arquitetura simulada.
 
 ![Arquitetura Web](diagram/arquitetura_web.png)
+
 ### ⚙️ Detalhamento dos Microserviços
 #### 📨 receber_pedido.py (API Gateway + Lambda)
 **Responsabilidade:**
