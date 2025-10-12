@@ -17,13 +17,13 @@ Abaixo, detalhamos a jornada de um pedido através da nossa arquitetura simulada
 
 ```mermaid
 graph TD
-    A[Cliente faz o Pedido] --> B(receber_pedido);
-    B -- Adiciona na Fila --> C{Fila de Pedidos (SQS)};
-    C --> D(processar_pagamento);
-    D -- Publica Status --> E{Tópico de Status (SNS)};
-    E -- Status: SUCESSO --> F(atualizar_inventario);
-    E -- Status: SUCESSO --> G(enviar_notificacao);
-    E -- Status: FALHA --> H(cancelar_pedido);
+    A[Cliente faz o Pedido] --> B[receber_pedido];
+    B -- Adiciona na Fila --> C{Fila de Pedidos - SQS};
+    C --> D[processar_pagamento];
+    D -- Publica Status --> E{Topico de Status - SNS};
+    E -- Status: SUCESSO --> F[atualizar_inventario];
+    E -- Status: SUCESSO --> G[enviar_notificacao];
+    E -- Status: FALHA --> H[cancelar_pedido];
     E -- Status: FALHA --> G;
     subgraph "Lógica de Sucesso"
         F;
