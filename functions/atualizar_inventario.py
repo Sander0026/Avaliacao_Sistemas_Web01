@@ -8,10 +8,10 @@ from zoneinfo import ZoneInfo
 def atualizar_inventario(dados_do_status):
 
     # informações principais do status da atualização de inventário
-    status     = dados_do_status.get('status', 'DESCONHECIDO')
-    pedido_id  = dados_do_status.get('pedido_id', 'N/A')
-    produto_id = dados_do_status.get('id_produto', 'N/A')
-    quantidade = dados_do_status.get('quantidade', 0)
+    status               = dados_do_status.get('status', 'DESCONHECIDO')
+    pedido_id            = dados_do_status.get('pedido_id', 'N/A')
+    produto_id           = dados_do_status.get('id_produto', 'N/A')
+    quantidade           = dados_do_status.get('quantidade', 0)
     horario_atualizacao  = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d-%m-%Y %H:%M:%S")
 
     # Com status sucesso, o microserviço vai atuar iniciando a atualização de inventário
@@ -22,7 +22,7 @@ def atualizar_inventario(dados_do_status):
             "Horario": horario_atualizacao,
             "Nivel": "Informativo",
             "Servico": "atualizar_inventario",
-            "Mensagem": f"Dando baixa de {quantidade} unidade(s) do produto '{produto_id}' no inventário.",
+            "Mensagem": f"Dando baixa de {quantidade} unidade(s) do produto '{produto_id}' no inventario.",
             "Pedido_id": pedido_id
         }
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # Simular 5 pedidos recebendo diferentes status
     for _ in range(5):
-        status = random.choice(["SUCESSO", "FALHA"])
+        status   = random.choice(["SUCESSO", "FALHA"])
         detalhes = "Pagamento aprovado" if status == "SUCESSO" else "Erro no pagamento"
 
         pedido = {
