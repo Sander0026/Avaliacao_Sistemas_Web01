@@ -1,4 +1,4 @@
-# 🏗️ Simulação de Arquitetura de Microserviços para E-commerce na AWS com Python
+# 🛒 Simulação de Arquitetura de Microserviços para E-commerce na AWS com Python
 
 ## 📘 Introdução
 
