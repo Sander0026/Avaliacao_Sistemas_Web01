@@ -1,44 +1,133 @@
+# 🏗️ Simulação de Arquitetura de Microserviços para E-commerce na AWS com Python
 
-# Simulação de Arquitetura de Microserviços para E-commerce
+## 📘 Introdução
 
-## Introdução
+Este projeto **simula uma arquitetura de microserviços baseada em eventos**, inspirada em uma aplicação de e-commerce rodando na nuvem da **AWS**.  
+O objetivo é demonstrar, de forma prática e local, como diferentes serviços desacoplados podem interagir de maneira **assíncrona** para processar um fluxo de pedido completo.
 
-Este projeto simula uma arquitetura de microserviços baseada em eventos para o processamento de pedidos em um sistema de e-commerce. O objetivo é demonstrar de forma prática e simplificada como diferentes serviços podem interagir de maneira assíncrona, utilizando conceitos comuns em ambientes de nuvem como a AWS.
+Cada script Python (`.py`) representa um **microserviço independente**, com uma única responsabilidade, que se comunica através da troca de mensagens, simulando o comportamento de serviços da AWS como **API Gateway**, **Lambda**, **SQS** e **SNS**.  
+A abordagem é técnica, mas **simplificada** para facilitar o entendimento dos conceitos fundamentais de **arquiteturas orientadas a eventos**.
 
-Cada arquivo Python no diretório `functions/` representa um "microserviço" (simulado como uma função), que é responsável por uma etapa específica do fluxo de processamento de um pedido.
+---
 
-## Fluxo do Projeto
+## 🔁 Fluxo do Projeto
 
-O fluxo de processamento de um pedido é orquestrado da seguinte maneira:
+O fluxo de dados começa com o recebimento de um pedido e se ramifica dependendo do resultado do processamento do pagamento.  
+Abaixo, detalhamos a jornada de um pedido através da nossa arquitetura simulada.
 
-1.  **Recebimento do Pedido (`receber_pedido.py`)**
-    *   Um novo pedido é recebido com os dados do produto, quantidade e e-mail do cliente.
-    *   A função valida os dados, enriquece o pedido com um ID único (`pedido_id`) e o adiciona a uma fila de processamento.
-    *   **Simulação AWS:** Representa um *API Gateway* que recebe a requisição e invoca uma função *Lambda* que, por sua vez, envia uma mensagem para uma fila *SQS (Simple Queue Service)*.
+```mermaid
+graph TD
+    A[Cliente faz o Pedido] --> B(receber_pedido.py);
+    B -- Adiciona na Fila --> C{Fila de Pedidos (SQS)};
+    C --> D(processar_pagamento.py);
+    D -- Publica Status --> E{Tópico de Status (SNS)};
+    E -- Status: SUCESSO --> F(atualizar_inventario.py);
+    E -- Status: SUCESSO --> G(enviar_notificacao.py);
+    E -- Status: FALHA --> H(cancelar_pedido.py);
+    E -- Status: FALHA --> G;
+    subgraph "Lógica de Sucesso"
+        F;
+    end
+    subgraph "Lógica de Falha"
+        H;
+    end
+    subgraph "Notificações"
+        G;
+    end
+⚙️ Detalhamento dos Microserviços
+📨 receber_pedido.py (API Gateway + Lambda)
+Responsabilidade:
+É a porta de entrada do sistema. Recebe os dados do pedido, valida as informações essenciais (id_produto, quantidade) e, se tudo estiver correto, adiciona o pedido a uma fila.
 
-2.  **Processamento do Pagamento (`processar_pagamento.py`)**
-    *   Esta função consome o pedido da fila para processar o pagamento.
-    *   Ela simula a comunicação com um gateway de pagamento, resultando em um status de "SUCESSO" ou "FALHA".
-    *   O resultado do processamento (com o status do pagamento) é então publicado para que outros serviços possam reagir.
-    *   **Simulação AWS:** Representa uma função *Lambda* que é acionada por mensagens na fila *SQS*. Após o processamento, ela publica o resultado em um tópico *SNS (Simple Notification Service)*.
+Simula:
+O comportamento de um API Gateway que invoca uma Lambda para processamento inicial.
+A fila utilizada simula o Amazon SQS, garantindo que o pedido será processado mesmo que os serviços seguintes estejam ocupados.
 
-3.  **Reação ao Status do Pagamento**
-    *   Com base no status do pagamento publicado, diferentes microserviços são acionados para dar continuidade ao fluxo.
+💳 processar_pagamento.py (Lambda Consumidora)
+Responsabilidade:
+“Ouve” a fila de pedidos. Ao receber um novo pedido, simula a comunicação com um gateway de pagamento, resultando em um status de SUCESSO ou FALHA.
 
-    *   **Se o pagamento for um SUCESSO:**
-        *   **Atualização de Inventário (`atualizar_inventario.py`):** A função é acionada para dar baixa no estoque do produto vendido.
-        *   **Notificação de Sucesso (`enviar_notificacao.py`):** Uma notificação por e-mail é enviada ao cliente confirmando a aprovação do pedido.
+Simula:
+Uma função Lambda acionada por mensagens da fila SQS.
+Após o processamento, publica o resultado (mensagem de status) em um tópico, simulando o Amazon SNS (Simple Notification Service).
 
-    *   **Se o pagamento for uma FALHA:**
-        *   **Cancelamento do Pedido (`cancelar_pedido.py`):** O pedido é marcado como cancelado no sistema.
-        *   **Notificação de Falha (`enviar_notificacao.py`):** Uma notificação por e-mail é enviada ao cliente informando sobre a falha no pagamento.
+📡 O Padrão Fan-out (Tópico SNS)
+Após o pagamento, o status é publicado em um tópico SNS.
+Vários serviços "assinam" esse tópico e recebem a mesma mensagem simultaneamente, agindo de forma independente com base no conteúdo da mensagem.
+Esse comportamento é conhecido como padrão fan-out, uma das grandes vantagens do desacoplamento.
 
-4.  **Registro de Logs (`registrar_log.py`)**
-    *   Ao longo de todo o processo, os serviços podem registrar logs de suas operações (embora o arquivo `registrar_log.py` no projeto atual esteja duplicado, a ideia é que ele centralize ou padronize a forma como os logs são capturados).
-    *   **Simulação AWS:** Representa o serviço *CloudWatch*, que centraliza os logs de todas as funções *Lambda* e outros serviços da AWS, permitindo monitoramento e depuração.
+📦 atualizar_inventario.py (Lambda Assinante)
+Responsabilidade:
+Dar baixa no estoque quando o pagamento for SUCESSO.
 
-## Conclusão
+Simula:
+Uma Lambda assinante do tópico SNS, que filtra as mensagens e age apenas em caso de sucesso.
 
-Este projeto oferece uma visão simplificada, porém técnica, de uma arquitetura de microserviços orientada a eventos. Ele demonstra como a separação de responsabilidades e a comunicação assíncrona permitem construir sistemas mais escaláveis, resilientes e fáceis de manter.
+✉️ enviar_notificacao.py (Lambda Assinante)
+Responsabilidade:
+Notificar o cliente por e-mail.
+Age tanto em caso de SUCESSO (e-mail de confirmação) quanto de FALHA (e-mail de erro no pagamento).
 
-Cada "microserviço" opera de forma independente, reagindo a eventos específicos, o que é um padrão de arquitetura fundamental para aplicações de nuvem modernas.
+Simula:
+Uma Lambda que assina o mesmo tópico SNS e executa diferentes ações com base no status.
+
+❌ cancelar_pedido.py (Lambda Assinante)
+Responsabilidade:
+Iniciar o processo de cancelamento do pedido quando o status for FALHA.
+
+Simula:
+Uma Lambda dedicada a tratar falhas, revertendo ou marcando o pedido como cancelado no sistema.
+
+🧾 registrar_log.py (Lambda de Monitoramento)
+Responsabilidade:
+Centralizar os logs.
+Pode assinar o tópico SNS para receber todas as mensagens (independente do status) e registrar em um sistema de monitoramento (como CloudWatch).
+
+Simula:
+Uma prática comum de observabilidade, centralizando logs para facilitar depuração e monitoramento da saúde da aplicação.
+
+🚀 Como Executar
+Cada script pode ser executado individualmente para testar sua lógica isoladamente.
+No terminal, use:
+
+bash
+Copiar código
+python receber_pedido.py
+python processar_pagamento.py
+# e assim por diante...
+A execução de cada script imprimirá no console o resultado da operação em formato JSON, simulando a mensagem que seria enviada para o próximo serviço na arquitetura real.
+
+🧠 Conclusão
+Este projeto demonstra de forma clara os benefícios de uma arquitetura de microserviços orientada a eventos:
+
+Desacoplamento: Os serviços não conhecem uns aos outros, apenas os contratos das mensagens.
+
+Resiliência: Falhas em um serviço não afetam os demais.
+
+Escalabilidade: Cada serviço pode ser escalado independentemente.
+
+Embora seja uma simulação local, os padrões e conceitos aqui aplicados são a base para construir sistemas robustos, escaláveis e de fácil manutenção na nuvem.
+
+💡 Tecnologias simuladas:
+AWS Lambda, Amazon SQS, Amazon SNS, API Gateway, Python 3.x
+
+📂 Estrutura sugerida:
+
+Copiar código
+├── receber_pedido.py
+├── processar_pagamento.py
+├── atualizar_inventario.py
+├── enviar_notificacao.py
+├── cancelar_pedido.py
+└── registrar_log.py
+🧩 Conceitos aplicados:
+
+Arquitetura orientada a eventos
+
+Padrão fan-out
+
+Desacoplamento de microserviços
+
+Simulação de mensageria (SQS/SNS)
+
+Processamento assíncrono
