@@ -34,100 +34,106 @@ graph TD
     subgraph "Notificações"
         G;
     end
-⚙️ Detalhamento dos Microserviços
-📨 receber_pedido.py (API Gateway + Lambda)
-Responsabilidade:
+```
+### ⚙️ Detalhamento dos Microserviços
+#### 📨 receber_pedido.py (API Gateway + Lambda)
+**Responsabilidade:**
 É a porta de entrada do sistema. Recebe os dados do pedido, valida as informações essenciais (id_produto, quantidade) e, se tudo estiver correto, adiciona o pedido a uma fila.
 
-Simula:
+**Simula:**
 O comportamento de um API Gateway que invoca uma Lambda para processamento inicial.
 A fila utilizada simula o Amazon SQS, garantindo que o pedido será processado mesmo que os serviços seguintes estejam ocupados.
 
-💳 processar_pagamento.py (Lambda Consumidora)
-Responsabilidade:
+#### 💳 processar_pagamento.py (Lambda Consumidora)
+**Responsabilidade:**
 “Ouve” a fila de pedidos. Ao receber um novo pedido, simula a comunicação com um gateway de pagamento, resultando em um status de SUCESSO ou FALHA.
 
-Simula:
+**Simula:**
 Uma função Lambda acionada por mensagens da fila SQS.
 Após o processamento, publica o resultado (mensagem de status) em um tópico, simulando o Amazon SNS (Simple Notification Service).
 
-📡 O Padrão Fan-out (Tópico SNS)
+#### 📡 O Padrão Fan-out (Tópico SNS)
 Após o pagamento, o status é publicado em um tópico SNS.
 Vários serviços "assinam" esse tópico e recebem a mesma mensagem simultaneamente, agindo de forma independente com base no conteúdo da mensagem.
 Esse comportamento é conhecido como padrão fan-out, uma das grandes vantagens do desacoplamento.
 
-📦 atualizar_inventario.py (Lambda Assinante)
-Responsabilidade:
+#### 📦 atualizar_inventario.py (Lambda Assinante)
+**Responsabilidade:**
 Dar baixa no estoque quando o pagamento for SUCESSO.
 
-Simula:
+**Simula:**
 Uma Lambda assinante do tópico SNS, que filtra as mensagens e age apenas em caso de sucesso.
 
-✉️ enviar_notificacao.py (Lambda Assinante)
-Responsabilidade:
+#### ✉️ enviar_notificacao.py (Lambda Assinante)
+**Responsabilidade:**
 Notificar o cliente por e-mail.
 Age tanto em caso de SUCESSO (e-mail de confirmação) quanto de FALHA (e-mail de erro no pagamento).
 
-Simula:
+**Simula:**
 Uma Lambda que assina o mesmo tópico SNS e executa diferentes ações com base no status.
 
-❌ cancelar_pedido.py (Lambda Assinante)
-Responsabilidade:
+#### ❌ cancelar_pedido.py (Lambda Assinante)
+**Responsabilidade:**
 Iniciar o processo de cancelamento do pedido quando o status for FALHA.
 
-Simula:
+**Simula:**
 Uma Lambda dedicada a tratar falhas, revertendo ou marcando o pedido como cancelado no sistema.
 
-🧾 registrar_log.py (Lambda de Monitoramento)
-Responsabilidade:
+#### 🧾 registrar_log.py (Lambda de Monitoramento)
+**Responsabilidade:**
 Centralizar os logs.
 Pode assinar o tópico SNS para receber todas as mensagens (independente do status) e registrar em um sistema de monitoramento (como CloudWatch).
 
-Simula:
+**Simula:**
 Uma prática comum de observabilidade, centralizando logs para facilitar depuração e monitoramento da saúde da aplicação.
 
-🚀 Como Executar
+---
+
+## 🚀 Como Executar
 Cada script pode ser executado individualmente para testar sua lógica isoladamente.
 No terminal, use:
 
-bash
-Copiar código
-python receber_pedido.py
-python processar_pagamento.py
+```bash
+python functions/receber_pedido.py
+python functions/processar_pagamento.py
 # e assim por diante...
+```
 A execução de cada script imprimirá no console o resultado da operação em formato JSON, simulando a mensagem que seria enviada para o próximo serviço na arquitetura real.
 
-🧠 Conclusão
+---
+
+## 🧠 Conclusão
 Este projeto demonstra de forma clara os benefícios de uma arquitetura de microserviços orientada a eventos:
 
-Desacoplamento: Os serviços não conhecem uns aos outros, apenas os contratos das mensagens.
-
-Resiliência: Falhas em um serviço não afetam os demais.
-
-Escalabilidade: Cada serviço pode ser escalado independentemente.
+- **Desacoplamento:** Os serviços não conhecem uns aos outros, apenas os contratos das mensagens.
+- **Resiliência:** Falhas em um serviço não afetam os demais.
+- **Escalabilidade:** Cada serviço pode ser escalado independentemente.
 
 Embora seja uma simulação local, os padrões e conceitos aqui aplicados são a base para construir sistemas robustos, escaláveis e de fácil manutenção na nuvem.
 
-💡 Tecnologias simuladas:
-AWS Lambda, Amazon SQS, Amazon SNS, API Gateway, Python 3.x
+---
 
-📂 Estrutura sugerida:
+### 💡 Tecnologias simuladas:
+- AWS Lambda
+- Amazon SQS
+- Amazon SNS
+- API Gateway
+- Python 3.x
 
-Copiar código
-├── receber_pedido.py
-├── processar_pagamento.py
-├── atualizar_inventario.py
-├── enviar_notificacao.py
-├── cancelar_pedido.py
-└── registrar_log.py
-🧩 Conceitos aplicados:
-
-Arquitetura orientada a eventos
-
-Padrão fan-out
-
-Desacoplamento de microserviços
-
-Simulação de mensageria (SQS/SNS)
-
-Processamento assíncrono
+### 📂 Estrutura sugerida:
+```
+.
+└── functions/
+    ├── receber_pedido.py
+    ├── processar_pagamento.py
+    ├── atualizar_inventario.py
+    ├── enviar_notificacao.py
+    ├── cancelar_pedido.py
+    └── registrar_log.py
+```
+### 🧩 Conceitos aplicados:
+- Arquitetura orientada a eventos
+- Padrão fan-out
+- Desacoplamento de microserviços
+- Simulação de mensageria (SQS/SNS)
+- Processamento assíncrono
