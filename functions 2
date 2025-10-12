@@ -1,0 +1,43 @@
+import json
+from datetime import datetime
+
+def registrar_log(dados_do_status):
+    """
+    Responsabilidade:
+        - Servir como um "auditor", recebendo dados de eventos (como uma mensagem SNS).
+        - Formatar esses dados em um log padronizado e estruturado.
+    
+    Parâmetros:
+        dados_do_status (dict): Dicionário contendo informações do evento de um pedido.
+    
+    Comportamento:
+        - Gera timestamp atual.
+        - Extrai e organiza os dados do evento.
+        - Imprime o log formatado como JSON.
+    """
+    
+    # Captura o horário exato do log.
+    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    # Extrai informações com segurança.
+    pedido_id = dados_do_status.get('pedido_id', 'N/A')
+    status = dados_do_status.get('status', 'DESCONHECIDO')
+    detalhes = dados_do_status.get('detalhes', 'Sem detalhes')
+
+    # Monta o log como dicionário estruturado.
+    log_estruturado = {
+        "timestamp": timestamp,
+        "nivel": "AUDITORIA",
+        "mensagem": f"Evento de processamento do pedido '{pedido_id}' recebido.",
+        "dados_do_evento": {
+            "pedido_id": pedido_id,
+            "status_final": status,
+            "detalhes_transacao": detalhes,
+            "id_produto": dados_do_status.get('id_produto'),
+            "quantidade": dados_do_status.get('quantidade'),
+            "email_cliente": dados_do_status.get('email_cliente')
+        }
+    }
+
+    # Imprime log no formato JSON identado.
+    print(json.dumps(log_estruturado, indent=4))

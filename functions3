@@ -1,0 +1,81 @@
+import json
+import random
+import uuid
+from faker import Faker
+
+def enviar_notificacao(dados_do_status):
+    """
+    Responsabilidade:
+        - Receber uma notificação com dados do pedido.
+        - Verificar o status da transação.
+        - Simular o envio de um e-mail ao cliente com base no resultado.
+    
+    Parâmetros:
+        dados_do_status (dict): Dicionário com os dados do pedido.
+    """
+    
+    # Extrai os dados necessários
+    status = dados_do_status.get('status')
+    email_cliente = dados_do_status.get('email_cliente')
+    pedido_id = dados_do_status.get('pedido_id')
+
+    # Validação mínima
+    if not all([status, email_cliente, pedido_id]):
+        print("AVISO: Notificação recebida com dados incompletos. Não é possível enviar e-mail.")
+        return
+
+    # Simula envio de e-mail de acordo com o status
+    if status == 'SUCESSO':
+        assunto = f"Seu pedido {pedido_id} foi aprovado!"
+        corpo_email = f"""
+        Olá!
+
+        Ótimas notícias! O pagamento do seu pedido {pedido_id} foi confirmado e ele já está sendo preparado para envio.
+
+        Obrigado por comprar conosco!
+        """
+    elif status == 'FALHA':
+        assunto = f"Problema no pagamento do seu pedido {pedido_id}"
+        corpo_email = f"""
+        Olá,
+
+        Infelizmente, ocorreu um problema ao processar o pagamento do seu pedido {pedido_id}.
+        Por favor, verifique os dados do seu cartão ou tente outra forma de pagamento.
+
+        Qualquer dúvida, entre em contato com nosso suporte.
+        """
+    else:
+        print(f"INFO: Status '{status}' do pedido '{pedido_id}' não requer notificação por e-mail.")
+        return
+
+    # Impressão simulando envio de e-mail
+    print(f"\n--- SIMULANDO ENVIO DE E-MAIL ---")
+    print(f"PARA: {email_cliente}")
+    print(f"ASSUNTO: {assunto}")
+    print(corpo_email.strip())
+    print("---------------------------------")
+
+
+# --- Bloco de Execução Principal ---
+if __name__ == '__main__':
+    
+    faker = Faker()
+
+    # Sorteia aleatoriamente o status da transação
+    status = random.choice(['SUCESSO', 'FALHA'])
+    detalhes = "Pagamento aprovado." if status == 'SUCESSO' else "Cartão recusado."
+
+    # Simula uma notificação recebida
+    notificacao = {
+        "pedido_id": str(uuid.uuid4()),
+        "status": status,
+        "detalhes": detalhes,
+        "id_produto": faker.random_int(min=1, max=1000),
+        "quantidade": faker.random_int(min=1, max=100),
+        "email_cliente": faker.email()
+    }
+
+    print("--- Testando o microserviço 'enviar_notificacao' ---")
+
+    # Executa a função com os dados simulados
+    enviar_notificacao(notificacao)
