@@ -8,9 +8,9 @@ from zoneinfo import ZoneInfo
 def cancelar_pedido(dados_do_status):
 
     # informações principais do pedido recebido
-    status    = dados_do_status.get('status', 'DESCONHECIDO')
-    pedido_id = dados_do_status.get('pedido_id', 'N/A')
-    detalhes  = dados_do_status.get('detalhes', 'Sem detalhes')
+    status               = dados_do_status.get('status', 'DESCONHECIDO')
+    pedido_id            = dados_do_status.get('pedido_id', 'N/A')
+    detalhes             = dados_do_status.get('detalhes', 'Sem detalhes')
     horario_cancelamento = datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d-%m-%Y %H:%M:%S")
 
     # Verifica se o status do pedido indica falha, nesse caso o microserviço deve iniciar o processo de cancelamento.
@@ -27,7 +27,7 @@ def cancelar_pedido(dados_do_status):
         print(json.dumps(log_cancelamento, indent=4))
         return True # retornando true indica que o processo de cancelamento foi iniciado
     else:
-        print(f"INFO: Pedido '{pedido_id}' com status '{status}'. Nenhuma ação de cancelamento necessária.")
+        print(f"INFO: Pedido '{pedido_id}' com status '{status}'. Nenhuma ação de cancelamento necessaria.")
         return False # retornando false indica que o cancelamento não é necessario
 
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # Simular 5 pedidos recebendo diferentes status
     for _ in range(5):
-        status = random.choice(["SUCESSO", "FALHA"])
+        status   = random.choice(["SUCESSO", "FALHA"])
         detalhes = "Pagamento recusado" if status == "FALHA" else "Pagamento aprovado"
 
         pedido = {
