@@ -17,13 +17,13 @@ Abaixo, detalhamos a jornada de um pedido através da nossa arquitetura simulada
 
 ```mermaid
 graph TD
-    A[Cliente faz o Pedido] --> B(receber_pedido.py);
+    A[Cliente faz o Pedido] --> B(receber_pedido);
     B -- Adiciona na Fila --> C{Fila de Pedidos (SQS)};
-    C --> D(processar_pagamento.py);
+    C --> D(processar_pagamento);
     D -- Publica Status --> E{Tópico de Status (SNS)};
-    E -- Status: SUCESSO --> F(atualizar_inventario.py);
-    E -- Status: SUCESSO --> G(enviar_notificacao.py);
-    E -- Status: FALHA --> H(cancelar_pedido.py);
+    E -- Status: SUCESSO --> F(atualizar_inventario);
+    E -- Status: SUCESSO --> G(enviar_notificacao);
+    E -- Status: FALHA --> H(cancelar_pedido);
     E -- Status: FALHA --> G;
     subgraph "Lógica de Sucesso"
         F;
@@ -87,9 +87,7 @@ Pode assinar o tópico SNS para receber todas as mensagens (independente do stat
 **Simula:**
 Uma prática comum de observabilidade, centralizando logs para facilitar depuração e monitoramento da saúde da aplicação.
 
----
-
-## 🚀 Como Executar
+### 🚀 Como Executar
 Cada script pode ser executado individualmente para testar sua lógica isoladamente.
 No terminal, use:
 
@@ -100,9 +98,7 @@ python functions/processar_pagamento.py
 ```
 A execução de cada script imprimirá no console o resultado da operação em formato JSON, simulando a mensagem que seria enviada para o próximo serviço na arquitetura real.
 
----
-
-## 🧠 Conclusão
+### 🧠 Conclusão
 Este projeto demonstra de forma clara os benefícios de uma arquitetura de microserviços orientada a eventos:
 
 - **Desacoplamento:** Os serviços não conhecem uns aos outros, apenas os contratos das mensagens.
@@ -110,8 +106,6 @@ Este projeto demonstra de forma clara os benefícios de uma arquitetura de micro
 - **Escalabilidade:** Cada serviço pode ser escalado independentemente.
 
 Embora seja uma simulação local, os padrões e conceitos aqui aplicados são a base para construir sistemas robustos, escaláveis e de fácil manutenção na nuvem.
-
----
 
 ### 💡 Tecnologias simuladas:
 - AWS Lambda
@@ -122,14 +116,12 @@ Embora seja uma simulação local, os padrões e conceitos aqui aplicados são a
 
 ### 📂 Estrutura sugerida:
 ```
-.
-└── functions/
-    ├── receber_pedido.py
-    ├── processar_pagamento.py
-    ├── atualizar_inventario.py
-    ├── enviar_notificacao.py
-    ├── cancelar_pedido.py
-    └── registrar_log.py
+├── receber_pedido.py
+├── processar_pagamento.py
+├── atualizar_inventario.py
+├── enviar_notificacao.py
+├── cancelar_pedido.py
+└── registrar_log.py
 ```
 ### 🧩 Conceitos aplicados:
 - Arquitetura orientada a eventos
